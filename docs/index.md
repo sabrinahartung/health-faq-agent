@@ -18,14 +18,21 @@ entirely locally, without a single API key.
     user queries. Documentation and code are English; domain vocabulary is
     not translated.
 
-## Why this service exists
+## Why this project exists
 
-The project is a learning track along a real job profile: an agent service
-that not only works, but is observable, evaluated and traceable. What is
-documented here is therefore not only the result but the route — including
-the wrong turns.
+A practice project for building a retrieval-augmented agent on a domain where
+correctness matters and the limits of competence are sharp: entitlements under
+German statutory health insurance.
 
-## Status
+The interesting part is not that it answers questions. It is what it takes to
+know whether it answers them *well* — a corpus you are allowed to use, a
+retrieval step you can measure, a refusal boundary you can defend, and traces
+you can inspect when it goes wrong.
+
+What is documented here is therefore not only the result but the route,
+including the wrong turns.
+
+## Roadmap
 
 | Phase | Content | Status |
 |---|---|---|

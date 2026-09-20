@@ -44,7 +44,7 @@ change; verify before relying on them.
 
 | Source | Reason |
 |---|---|
-| Health insurer FAQs (TK, AOK, Barmer) | copyrighted |
+| Health insurers' own FAQ pages | copyrighted |
 | gesund.bund.de | ministry content, no `robots.txt`, no usage licence published |
 | IQWiG / gesundheitsinformation.de | high quality, but copyrighted |
 

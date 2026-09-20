@@ -38,7 +38,7 @@ queries. Only the YAML field names are English.
 
 ## Deliberately not used
 
-- **Health insurer FAQs (TK, AOK, Barmer):** copyrighted.
+- **Health insurers' own FAQ pages:** copyrighted.
 - **gesund.bund.de:** ministry content, no `robots.txt` and no usage licence
   published — no dependable right of reuse.
 

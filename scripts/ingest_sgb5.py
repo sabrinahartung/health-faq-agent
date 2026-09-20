@@ -63,7 +63,11 @@ def fetch_xml(raw_dir: Path, force: bool = False) -> Path:
     if force or not archive.exists():
         log.info("downloading %s", XML_URL)
         req = urllib.request.Request(
-            XML_URL, headers={"User-Agent": "health-faq-agent/0.1 (learning project)"}
+            XML_URL,
+            headers={
+                "User-Agent": "health-faq-agent/0.1 "
+                "(+https://github.com/sabrinahartung/health-faq-agent)"
+            },
         )
         with urllib.request.urlopen(req, timeout=60) as resp, archive.open("wb") as fh:
             fh.write(resp.read())

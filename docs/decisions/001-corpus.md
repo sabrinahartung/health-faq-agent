@@ -10,8 +10,8 @@ naming a source. Two requirements were in conflict:
 1. The corpus should fit the domain of a health insurer.
 2. The repository is public — so the content must be safely reusable.
 
-That is exactly where the obvious sources fail: the FAQ pages of TK, AOK or
-Barmer are topically perfect and copyrighted.
+That is exactly where the obvious sources fail: the FAQ pages of the large
+statutory health insurers are topically perfect and copyrighted.
 
 ## Decision
 
@@ -49,7 +49,7 @@ refusal cases in the evaluation arbitrary. SGB V yields a defensible line:
 
 | Source | Reason |
 |---|---|
-| TK, AOK, Barmer FAQs | copyrighted, not redistributable |
+| Health insurers' own FAQ pages | copyrighted, not redistributable |
 | gesund.bund.de | ministry content, no `robots.txt`, no usage licence published |
 | IQWiG / gesundheitsinformation.de | high quality, but copyrighted |
 | Wikipedia (CC BY-SA) | free, but holds no entitlement or benefit information |

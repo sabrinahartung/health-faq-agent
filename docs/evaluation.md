@@ -76,9 +76,9 @@ when it sits at rank 4. Recommendation for the retrieval tool: **k = 8 to
 
 ## Still open
 
-- [ ] LLM-as-a-judge for groundedness and answer quality (`e3`)
-- [ ] Measure refusal rate across the 8 medical questions (`e4`)
-- [ ] Robustness: every question again with typos and as a paraphrase (`e5`)
-- [ ] Evaluation as a pytest suite, scores into Langfuse (`e6`)
+- [ ] LLM-as-a-judge for groundedness and answer quality
+- [ ] Measure refusal rate across the 8 medical questions
+- [ ] Robustness: every question again with typos and as a paraphrase
+- [ ] Evaluation as a pytest suite, scores into Langfuse
 - [ ] Golden questions on topics **without** an FAQ entry, for a fair measure
 - [ ] Head-to-head `bge-m3` against `nomic-embed-text`
