@@ -1,0 +1,81 @@
+site_name: Health-FAQ-Agent
+site_description: >-
+  Ein lokal laufender RAG-Agent zu Leistungsansprüchen der gesetzlichen
+  Krankenversicherung — mit Observability, Evaluation und Quellenangaben.
+site_url: https://sabrinahartung.github.io/health-faq-agent/
+repo_url: https://github.com/sabrinahartung/health-faq-agent
+repo_name: sabrinahartung/health-faq-agent
+edit_uri: edit/main/docs/
+copyright: MIT-Lizenz · Sabrina Hartung
+
+theme:
+  name: material
+  language: de
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Zu dunklem Design wechseln
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Zu hellem Design wechseln
+
+nav:
+  - Überblick: index.md
+  - Architektur: architektur.md
+  - Korpus & Lizenz: korpus.md
+  - Evaluation: evaluation.md
+  - Entscheidungen:
+      - entscheidungen/index.md
+      - 001 — Korpus SGB V: entscheidungen/001-korpus.md
+      - 002 — Embedding-Modell: entscheidungen/002-embedding-modell.md
+      - 003 — Chunking nach Absätzen: entscheidungen/003-chunking.md
+      - 004 — FAQ-Ebene: entscheidungen/004-faq-ebene.md
+  - Logbuch: logbuch.md
+  - Entwicklung: entwicklung.md
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sabrinahartung

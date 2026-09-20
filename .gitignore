@@ -27,3 +27,6 @@ htmlcov/
 data/chroma/
 data/raw/
 logs/
+
+# MkDocs
+site/

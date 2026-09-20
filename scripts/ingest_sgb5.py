@@ -155,6 +155,7 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
     root = ET.parse(xml_path).getroot()
     chunks: list[Chunk] = []
     skipped = 0
+    dropped_absaetze = 0
 
     for norm in root.findall(".//norm"):
         enbez = (norm.findtext(".//enbez") or "").strip()
@@ -168,12 +169,20 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
         content = norm.find(".//textdaten/text/Content")
         body = render_text(content) if content is not None else ""
 
-        if not body or "(weggefallen)" in body:
+        if not body:
             skipped += 1
             continue
 
-        absaetze = split_absaetze(body)
-        for abs_nr, abs_text in absaetze:
+        for abs_nr, abs_text in split_absaetze(body):
+            # Nur den einzelnen aufgehobenen Absatz ueberspringen, nicht den
+            # ganzen Paragraphen: 71 gueltige Normen - darunter § 39
+            # (Krankenhausbehandlung) und § 31 (Arzneimittel) - enthalten
+            # einzelne "(weggefallen)"-Absaetze und wuerden sonst fehlen.
+            kern = ABSATZ_RE.sub("", abs_text).strip()
+            if not kern or kern == "(weggefallen)":
+                dropped_absaetze += 1
+                continue
+
             parts = split_long(abs_text, max_chars, overlap)
             for i, part in enumerate(parts):
                 # Ueberschrift voranstellen: bge-m3 sieht sonst nur nackten
@@ -201,7 +210,10 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
                     )
                 )
 
-    log.info("%d Chunks aus %s (%d Paragraphen weggefallen/leer)", len(chunks), xml_path.name, skipped)
+    log.info(
+        "%d Chunks aus %s (%d Paragraphen ohne Text, %d aufgehobene Absaetze uebersprungen)",
+        len(chunks), xml_path.name, skipped, dropped_absaetze,
+    )
     return chunks
 
 
