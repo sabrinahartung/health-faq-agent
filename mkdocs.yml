@@ -1,16 +1,16 @@
-site_name: Health-FAQ-Agent
+site_name: Health FAQ Agent
 site_description: >-
-  Ein lokal laufender RAG-Agent zu Leistungsansprüchen der gesetzlichen
-  Krankenversicherung — mit Observability, Evaluation und Quellenangaben.
+  A locally running RAG agent for entitlements under German statutory health
+  insurance — with observability, evaluation and source citations.
 site_url: https://sabrinahartung.github.io/health-faq-agent/
 repo_url: https://github.com/sabrinahartung/health-faq-agent
 repo_name: sabrinahartung/health-faq-agent
 edit_uri: edit/main/docs/
-copyright: MIT-Lizenz · Sabrina Hartung
+copyright: MIT licence · Sabrina Hartung
 
 theme:
   name: material
-  language: de
+  language: en
   icon:
     repo: fontawesome/brands/github
   features:
@@ -29,28 +29,28 @@ theme:
       accent: teal
       toggle:
         icon: material/weather-night
-        name: Zu dunklem Design wechseln
+        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: teal
       accent: teal
       toggle:
         icon: material/weather-sunny
-        name: Zu hellem Design wechseln
+        name: Switch to light mode
 
 nav:
-  - Überblick: index.md
-  - Architektur: architektur.md
-  - Korpus & Lizenz: korpus.md
+  - Overview: index.md
+  - Architecture: architecture.md
+  - Corpus & licensing: corpus.md
   - Evaluation: evaluation.md
-  - Entscheidungen:
-      - entscheidungen/index.md
-      - 001 — Korpus SGB V: entscheidungen/001-korpus.md
-      - 002 — Embedding-Modell: entscheidungen/002-embedding-modell.md
-      - 003 — Chunking nach Absätzen: entscheidungen/003-chunking.md
-      - 004 — FAQ-Ebene: entscheidungen/004-faq-ebene.md
-  - Logbuch: logbuch.md
-  - Entwicklung: entwicklung.md
+  - Decisions:
+      - decisions/index.md
+      - 001 — SGB V as corpus: decisions/001-corpus.md
+      - 002 — Embedding model: decisions/002-embedding-model.md
+      - 003 — Chunking by subsection: decisions/003-chunking.md
+      - 004 — FAQ layer: decisions/004-faq-layer.md
+  - Logbook: logbook.md
+  - Development: development.md
 
 markdown_extensions:
   - abbr

@@ -1,4 +1,4 @@
-name: Dokumentation
+name: Documentation
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
-# Nur der jeweils letzte Lauf zaehlt; laufende Deployments nicht abbrechen.
+# Only the latest run matters; do not cancel an in-flight deployment.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -27,15 +27,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: uv einrichten
+      - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
-      - name: Abhaengigkeiten installieren
+      - name: Install dependencies
         run: uv sync --group dev
 
-      - name: Dokumentation bauen
+      - name: Build documentation
         run: uv run mkdocs build --strict
 
       - uses: actions/configure-pages@v5

@@ -1,7 +1,7 @@
-"""Zentrale Konfiguration, ausschliesslich ueber Environment-Variablen.
+"""Central configuration, sourced exclusively from environment variables.
 
-Alle Werte haben Defaults, die lokal ohne .env funktionieren. Im Container
-werden sie ueber `environment:` in der Compose-Datei gesetzt.
+Every value has a default that works locally without a .env file. In a
+container they are supplied through `environment:` in the compose file.
 """
 
 from __future__ import annotations

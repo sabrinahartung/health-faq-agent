@@ -1,88 +1,96 @@
-# Health-FAQ-Agent
+# Health FAQ Agent
 
-Ein RAG-Agent, der Fragen zu **Leistungsansprüchen der gesetzlichen
-Krankenversicherung** beantwortet — mit Fundstelle im Gesetz, vollständig
-lokal, ohne einen einzigen API-Schlüssel.
+A RAG agent that answers questions about **entitlements under German
+statutory health insurance** — with a citation to the statute, running
+entirely locally, without a single API key.
 
 !!! info "Scope"
-    Der Agent beantwortet Fragen zu **Ansprüchen, Leistungen und Zuzahlungen**.
-    Er gibt **keine medizinische Einzelfallberatung**. Diese Grenze ist nicht
-    nachträglich aufgesetzt, sondern folgt aus der Wahl des Korpus — siehe
-    [Entscheidung 001](entscheidungen/001-korpus.md).
+    The agent answers questions about **entitlements, benefits and
+    co-payments**. It gives **no individual medical advice**. That boundary
+    is not bolted on afterwards; it follows from the choice of corpus — see
+    [Decision 001](decisions/001-corpus.md).
 
-## Warum es diesen Dienst gibt
+!!! note "Why the German vocabulary"
+    The domain is German statutory health insurance. Terms such as
+    *Familienversicherung*, *Belastungsgrenze* and *Zuzahlung* are terms of
+    art with no clean English equivalent, and the corpus, the FAQ layer and
+    the evaluation set are German by necessity — they have to match German
+    user queries. Documentation and code are English; domain vocabulary is
+    not translated.
 
-Das Projekt ist eine Lernstrecke entlang eines realen Stellenprofils: ein
-Agenten-Service, der nicht nur funktioniert, sondern beobachtbar, bewertet
-und nachvollziehbar ist. Was hier dokumentiert wird, ist deshalb nicht nur
-das Ergebnis, sondern der Weg dahin — inklusive der Irrwege.
+## Why this service exists
 
-## Stand
+The project is a learning track along a real job profile: an agent service
+that not only works, but is observable, evaluated and traceable. What is
+documented here is therefore not only the result but the route — including
+the wrong turns.
 
-| Phase | Inhalt | Status |
+## Status
+
+| Phase | Content | Status |
 |---|---|---|
-| 0 | Setup, Toolchain, lokale Modelle | ✅ abgeschlossen |
-| 0 | Korpus festgelegt und indexiert | ✅ abgeschlossen |
-| 1 | FastAPI-Service, Agent mit Tools | 🔨 in Arbeit |
-| 2 | Container, Compose, Podman | ⬜ offen |
-| 3 | Langfuse, Prometheus, Grafana | ⬜ offen |
-| 4 | Golden Set, LLM-as-a-Judge, Refusal-Rate | 🔨 Grundlage steht |
-| 5 | CI/CD | 🔨 Docs-Deployment steht |
-| 6 | Kubernetes (optional) | ⬜ offen |
-| 7 | README, Diagramme, Vortrag | ⬜ offen |
+| 0 | Setup, toolchain, local models | ✅ done |
+| 0 | Corpus chosen and indexed | ✅ done |
+| 1 | FastAPI service, agent with tools | 🔨 in progress |
+| 2 | Container, compose, podman | ⬜ open |
+| 3 | Langfuse, Prometheus, Grafana | ⬜ open |
+| 4 | Golden set, LLM-as-a-judge, refusal rate | 🔨 groundwork in place |
+| 5 | CI/CD | 🔨 docs deployment in place |
+| 6 | Kubernetes (optional) | ⬜ open |
+| 7 | README, diagrams, walkthrough | ⬜ open |
 
-## Kennzahlen heute
+## Numbers today
 
 <div class="grid cards" markdown>
 
--   **3 002**{ .lg } Chunks
+-   **3,002**{ .lg } chunks
 
     ---
 
-    Normtext des SGB V, nach Absätzen geschnitten
+    SGB V statutory text, cut along subsections
 
--   **18**{ .lg } FAQ-Einträge
+-   **18**{ .lg } FAQ entries
 
     ---
 
-    72 Alltagsformulierungen als Brücke zur Gesetzessprache
+    72 everyday phrasings bridging to legal language
 
 -   **95 %**{ .lg } Recall@1
 
     ---
 
-    gegen 68 % ohne FAQ-Ebene → [Evaluation](evaluation.md)
+    against 68 % without the FAQ layer → [Evaluation](evaluation.md)
 
--   **0 €**{ .lg } Laufkosten
+-   **€0**{ .lg } running cost
 
     ---
 
-    Ollama, Chroma, Langfuse und Grafana laufen lokal
+    Ollama, Chroma, Langfuse and Grafana all run locally
 
 </div>
 
-## Schnellstart
+## Quick start
 
 ```bash
-# Modelle bereitstellen
+# provide the models
 ollama pull llama3.2:3b
 ollama pull bge-m3
 
-# Abhängigkeiten
+# dependencies
 uv sync
 
-# Korpus laden und indexieren
+# load and index the corpus
 uv run scripts/ingest_sgb5.py --rebuild
 uv run scripts/ingest_faq.py
 
-# Retrieval prüfen
+# check retrieval
 uv run scripts/eval_retrieval.py
 ```
 
-Mehr dazu unter [Entwicklung](entwicklung.md).
+More under [Development](development.md).
 
-## Haftungsausschluss
+## Disclaimer
 
-Die verwendeten Gesetzestexte sind **nicht amtliche** konsolidierte Fassungen.
-Verbindlich ist allein das Bundesgesetzblatt. Der Agent nennt deshalb in jeder
-Antwort die Fundstelle, statt Verbindlichkeit zu suggerieren.
+The statutes used are **non-official** consolidated versions. Only the
+*Bundesgesetzblatt* is authoritative. The agent therefore cites its source in
+every answer rather than implying authority.

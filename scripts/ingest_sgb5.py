@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Ingest des SGB V (Gesetzliche Krankenversicherung) in ChromaDB.
+"""Ingest SGB V (German statutory health insurance law) into ChromaDB.
 
-Quelle:  https://www.gesetze-im-internet.de/sgb_5/xml.zip
-Lizenz:  Der Normtext ist nach § 5 UrhG nicht urheberrechtlich geschuetzt.
-         Details und Stand siehe SOURCES.md.
+Source:   https://www.gesetze-im-internet.de/sgb_5/xml.zip
+Licence:  The statutory text carries no copyright protection under
+          section 5 UrhG. See SOURCES.md for details and provenance.
 
-Ablauf:  XML laden (gecached) -> Normen parsen -> nach Absaetzen chunken
-         -> ueber Ollama einbetten -> in eine Chroma-Collection upserten.
+Pipeline: fetch XML (cached) -> parse norms -> chunk by Absatz (subsection)
+          -> embed via Ollama -> upsert into a Chroma collection.
 
-Die Chunk-IDs sind deterministisch, der Lauf ist damit idempotent:
-ein erneuter Aufruf aktualisiert bestehende Chunks, statt zu duplizieren.
+Chunk IDs are deterministic, so the run is idempotent: re-running updates
+existing chunks instead of duplicating them.
 
-Beispiele:
+Examples:
     uv run scripts/ingest_sgb5.py
     uv run scripts/ingest_sgb5.py --rebuild
     uv run scripts/ingest_sgb5.py --dry-run --limit 20
@@ -35,11 +35,11 @@ from health_faq_agent.config import Settings
 XML_URL = "https://www.gesetze-im-internet.de/sgb_5/xml.zip"
 NORM_URL = "https://www.gesetze-im-internet.de/sgb_5/__{num}.html"
 
-# Absatzmarker am Zeilenanfang: (1), (2), (2a) ...
+# Subsection markers at the start of a line: (1), (2), (2a) ...
 ABSATZ_RE = re.compile(r"^\((\d+[a-z]?)\)\s*")
 # "§ 27a" -> "27a"
 PARA_RE = re.compile(r"^§+\s*([\d]+[a-z]?)")
-# Satzgrenzen fuer das Nachchunken sehr langer Absaetze
+# Sentence boundaries, used when splitting very long subsections
 SENTENCE_RE = re.compile(r"(?<=[.;:])\s+")
 
 log = logging.getLogger("ingest")
@@ -56,25 +56,25 @@ class Chunk:
 
 
 def fetch_xml(raw_dir: Path, force: bool = False) -> Path:
-    """Laedt xml.zip und entpackt es nach raw_dir. Nutzt den Cache."""
+    """Download xml.zip and extract it into raw_dir. Uses the cache."""
     raw_dir.mkdir(parents=True, exist_ok=True)
     archive = raw_dir / "sgb5.zip"
 
     if force or not archive.exists():
-        log.info("lade %s", XML_URL)
+        log.info("downloading %s", XML_URL)
         req = urllib.request.Request(
-            XML_URL, headers={"User-Agent": "health-faq-agent/0.1 (Lernprojekt)"}
+            XML_URL, headers={"User-Agent": "health-faq-agent/0.1 (learning project)"}
         )
         with urllib.request.urlopen(req, timeout=60) as resp, archive.open("wb") as fh:
             fh.write(resp.read())
-        log.info("gespeichert: %s (%.1f KB)", archive, archive.stat().st_size / 1024)
+        log.info("saved %s (%.1f KB)", archive, archive.stat().st_size / 1024)
     else:
-        log.info("nutze Cache: %s (--refresh erzwingt Neuladen)", archive)
+        log.info("using cache %s (--refresh forces a re-download)", archive)
 
     with zipfile.ZipFile(archive) as zf:
         names = [n for n in zf.namelist() if n.endswith(".xml")]
         if not names:
-            raise RuntimeError(f"keine XML-Datei in {archive}")
+            raise RuntimeError(f"no XML file inside {archive}")
         target = raw_dir / names[0]
         if force or not target.exists():
             zf.extract(names[0], raw_dir)
@@ -85,14 +85,14 @@ def fetch_xml(raw_dir: Path, force: bool = False) -> Path:
 
 
 def _inline(el: ET.Element) -> str:
-    """Element inklusive verschachtelter Tags zu einer Zeile flachdruecken."""
+    """Flatten an element, nested tags included, into a single line."""
     return " ".join("".join(el.itertext()).split())
 
 
 def _render_list(dl: ET.Element) -> str:
-    """<DL> mit DT/DD-Paaren als eingerueckte Aufzaehlung rendern.
+    """Render a <DL> of DT/DD pairs as an indented list.
 
-    Ohne dieses Trennen klebt im Quell-XML der Marker am Text
+    Without this the source XML glues the marker to its text
     ("umfasst 1.Aerztliche Behandlung 2.zahnaerztliche ...").
     """
     items, marker = [], ""
@@ -108,7 +108,7 @@ def _render_list(dl: ET.Element) -> str:
 
 
 def render_text(content: ET.Element) -> str:
-    """<Content> zu Klartext rendern, eine Zeile je Block."""
+    """Render <Content> as plain text, one line per block."""
     blocks = []
     for el in content:
         block = _render_list(el) if el.tag == "DL" else _inline(el)
@@ -118,7 +118,7 @@ def render_text(content: ET.Element) -> str:
 
 
 def split_absaetze(text: str) -> list[tuple[str | None, str]]:
-    """Text an Absatzmarkern ((1), (2), ...) aufteilen."""
+    """Split text at subsection markers ((1), (2), ...)."""
     buckets: list[tuple[str | None, list[str]]] = []
     for line in text.split("\n"):
         match = ABSATZ_RE.match(line)
@@ -127,13 +127,13 @@ def split_absaetze(text: str) -> list[tuple[str | None, str]]:
         elif buckets:
             buckets[-1][1].append(line)
         else:
-            # Text vor dem ersten Absatzmarker (einabsaetzige Paragraphen)
+            # Text before the first marker (single-subsection paragraphs)
             buckets.append((None, [line]))
     return [(nr, "\n".join(lines).strip()) for nr, lines in buckets if "\n".join(lines).strip()]
 
 
 def split_long(text: str, max_chars: int, overlap: int) -> list[str]:
-    """Sehr lange Absaetze an Satzgrenzen teilen, mit Ueberlappung."""
+    """Split very long subsections at sentence boundaries, with overlap."""
     if len(text) <= max_chars:
         return [text]
 
@@ -161,7 +161,7 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
         enbez = (norm.findtext(".//enbez") or "").strip()
         para = PARA_RE.match(enbez)
         if not para:
-            # Kapitel- und Abschnittsueberschriften, Rahmennorm, Anlagen
+            # Chapter and section headings, framing norm, annexes
             continue
 
         num = para.group(1)
@@ -174,10 +174,10 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
             continue
 
         for abs_nr, abs_text in split_absaetze(body):
-            # Nur den einzelnen aufgehobenen Absatz ueberspringen, nicht den
-            # ganzen Paragraphen: 71 gueltige Normen - darunter § 39
-            # (Krankenhausbehandlung) und § 31 (Arzneimittel) - enthalten
-            # einzelne "(weggefallen)"-Absaetze und wuerden sonst fehlen.
+            # Skip only the individual repealed subsection, never the whole
+            # paragraph: 71 valid norms - among them section 39 (hospital
+            # treatment) and section 31 (medicines) - contain individual
+            # "(weggefallen)" subsections and would otherwise disappear.
             kern = ABSATZ_RE.sub("", abs_text).strip()
             if not kern or kern == "(weggefallen)":
                 dropped_absaetze += 1
@@ -185,21 +185,21 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
 
             parts = split_long(abs_text, max_chars, overlap)
             for i, part in enumerate(parts):
-                # Ueberschrift voranstellen: bge-m3 sieht sonst nur nackten
-                # Normtext und verliert den Bezug zum Thema des Paragraphen.
+                # Prepend the heading: otherwise bge-m3 only sees bare
+                # statutory prose and loses the paragraph's topic.
                 header = f"{enbez} {titel} (SGB V)".strip()
                 if abs_nr:
                     header += f", Absatz {abs_nr}"
 
                 meta = {
-                    "gesetz": "SGB V",
+                    "law": "SGB V",
                     "paragraph": enbez,
                     "paragraph_nr": num,
-                    "titel": titel,
-                    "absatz": abs_nr or "",
-                    "teil": i,
-                    "teile_gesamt": len(parts),
-                    "zitat": f"{enbez}{f' Abs. {abs_nr}' if abs_nr else ''} SGB V",
+                    "title": titel,
+                    "subsection": abs_nr or "",
+                    "part": i,
+                    "parts_total": len(parts),
+                    "citation": f"{enbez}{f' Abs. {abs_nr}' if abs_nr else ''} SGB V",
                     "source_url": NORM_URL.format(num=num),
                 }
                 chunks.append(
@@ -211,7 +211,7 @@ def build_chunks(xml_path: Path, max_chars: int, overlap: int) -> list[Chunk]:
                 )
 
     log.info(
-        "%d Chunks aus %s (%d Paragraphen ohne Text, %d aufgehobene Absaetze uebersprungen)",
+        "%d chunks from %s (%d paragraphs without text, %d repealed subsections skipped)",
         len(chunks), xml_path.name, skipped, dropped_absaetze,
     )
     return chunks
@@ -231,7 +231,7 @@ def index(chunks: list[Chunk], settings: Settings, batch_size: int, rebuild: boo
     if rebuild:
         try:
             client.delete_collection(settings.collection)
-            log.info("Collection %r geloescht", settings.collection)
+            log.info("dropped collection %r", settings.collection)
         except Exception:
             pass
 
@@ -239,7 +239,7 @@ def index(chunks: list[Chunk], settings: Settings, batch_size: int, rebuild: boo
         name=settings.collection,
         embedding_function=embed,
         configuration={"hnsw": {"space": "cosine"}},
-        metadata={"gesetz": "SGB V", "embedding_model": settings.embedding_model},
+        metadata={"law": "SGB V", "embedding_model": settings.embedding_model},
     )
 
     started = time.perf_counter()
@@ -250,10 +250,10 @@ def index(chunks: list[Chunk], settings: Settings, batch_size: int, rebuild: boo
             documents=[c.text for c in batch],
             metadatas=[c.metadata for c in batch],
         )
-        log.info("  %d/%d eingebettet", min(start + batch_size, len(chunks)), len(chunks))
+        log.info("  embedded %d/%d", min(start + batch_size, len(chunks)), len(chunks))
 
     log.info(
-        "fertig: %d Dokumente in %r (%.1fs, Modell %s)",
+        "done: %d documents in %r (%.1fs, model %s)",
         collection.count(),
         settings.collection,
         time.perf_counter() - started,
@@ -266,13 +266,13 @@ def index(chunks: list[Chunk], settings: Settings, batch_size: int, rebuild: boo
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--rebuild", action="store_true", help="Collection vorher loeschen")
-    parser.add_argument("--refresh", action="store_true", help="XML neu herunterladen statt Cache")
-    parser.add_argument("--dry-run", action="store_true", help="nur parsen und chunken, nicht einbetten")
-    parser.add_argument("--limit", type=int, help="nur die ersten N Chunks verarbeiten")
-    parser.add_argument("--max-chars", type=int, default=3000, help="max. Zeichen je Chunk (Default: 3000)")
-    parser.add_argument("--overlap", type=int, default=200, help="Ueberlappung beim Teilen (Default: 200)")
-    parser.add_argument("--batch-size", type=int, default=32, help="Chunks je Embedding-Batch (Default: 32)")
+    parser.add_argument("--rebuild", action="store_true", help="drop the collection first")
+    parser.add_argument("--refresh", action="store_true", help="re-download the XML instead of using the cache")
+    parser.add_argument("--dry-run", action="store_true", help="parse and chunk only, do not embed")
+    parser.add_argument("--limit", type=int, help="process only the first N chunks")
+    parser.add_argument("--max-chars", type=int, default=3000, help="max characters per chunk (default: 3000)")
+    parser.add_argument("--overlap", type=int, default=200, help="overlap when splitting (default: 200)")
+    parser.add_argument("--batch-size", type=int, default=32, help="chunks per embedding batch (default: 32)")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
 
@@ -288,23 +288,23 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.limit:
         chunks = chunks[: args.limit]
-        log.info("auf %d Chunks begrenzt", len(chunks))
+        log.info("limited to %d chunks", len(chunks))
 
     if not chunks:
-        log.error("keine Chunks erzeugt - Abbruch")
+        log.error("no chunks produced - aborting")
         return 1
 
     lengths = sorted(len(c.text) for c in chunks)
     log.info(
-        "Chunk-Laenge min/median/max: %d/%d/%d Zeichen",
+        "chunk length min/median/max: %d/%d/%d characters",
         lengths[0], lengths[len(lengths) // 2], lengths[-1],
     )
 
     if args.dry_run:
         for c in chunks[:3]:
-            log.info("--- %s | %s", c.id, c.metadata["zitat"])
+            log.info("--- %s | %s", c.id, c.metadata["citation"])
             log.info("%s ...", c.text[:300])
-        log.info("dry-run: nichts geschrieben")
+        log.info("dry run: nothing written")
         return 0
 
     index(chunks, settings, args.batch_size, args.rebuild)

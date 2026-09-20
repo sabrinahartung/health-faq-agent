@@ -1,258 +1,260 @@
-# Handgeschriebene FAQ-Ebene (MIT-Lizenz, Teil dieses Repositories).
+# Hand-written FAQ layer (MIT licence, part of this repository).
 #
-# Zweck: die Luecke zwischen Alltagssprache und Gesetzestext schliessen.
-# Jeder Eintrag wird zusammen mit seinen Varianten eingebettet und zeigt
-# auf die zugehoerige Fundstelle im SGB V.
+# Purpose: bridge the gap between everyday German and statutory language.
+# Each entry is embedded together with its variants and points at the
+# corresponding provision in SGB V.
 #
-# Alle Antworten sind gegen den Normtext geprueft (Stand siehe SOURCES.md).
-# Betraege und Fristen aendern sich - vor Uebernahme gegenpruefen.
-
+# Content stays GERMAN by design - this layer exists to match German user
+# queries. Only the field names are English. See docs/decisions/004.
+#
+# Every answer was checked against the statutory text (provenance: SOURCES.md).
+# Amounts and deadlines change - verify before relying on them.
 - id: faq-familienversicherung-studium
-  frage: Bin ich als Studentin bei meinen Eltern mitversichert?
-  varianten:
+  question: Bin ich als Studentin bei meinen Eltern mitversichert?
+  variants:
     - Bin ich als Student ueber meine Eltern krankenversichert?
     - Bis zu welchem Alter bin ich in der Familienversicherung?
     - Familienversicherung Studium bis wann?
     - Kann ich beitragsfrei bei meinen Eltern bleiben?
-  antwort: >
+  answer: >
     Kinder sind bis zur Vollendung des 25. Lebensjahres familienversichert,
     wenn sie sich in Schul- oder Berufsausbildung befinden - ein Studium zaehlt
     dazu. Ohne Ausbildung endet die Familienversicherung mit 23, generell
     spaetestens mit 18. Ein freiwilliges soziales oder oekologisches Jahr ist
     der Ausbildung gleichgestellt. Wird die Ausbildung durch eine gesetzliche
     Dienstpflicht verzoegert, verlaengert sich die Versicherung entsprechend.
-  zitate: ["§ 10 Abs. 2 SGB V"]
+  citations: ["§ 10 Abs. 2 SGB V"]
 
 - id: faq-familienversicherung-ehepartner
-  frage: Kann ich meinen Ehepartner bei mir mitversichern?
-  varianten:
+  question: Kann ich meinen Ehepartner bei mir mitversichern?
+  variants:
     - Ist mein Mann ueber mich mitversichert?
     - Familienversicherung fuer Ehegatten und Lebenspartner
     - Kann mein Partner beitragsfrei mitversichert werden?
-  antwort: >
+  answer: >
     Ehegatten, Lebenspartner und Kinder von Mitgliedern sind familienversichert,
     wenn sie ihren Wohnsitz im Inland haben, nicht selbst versicherungspflichtig
     oder -frei sind, nicht hauptberuflich selbststaendig sind und ihr
     Gesamteinkommen die gesetzliche Grenze nicht regelmaessig ueberschreitet.
-  zitate: ["§ 10 Abs. 1 SGB V"]
+  citations: ["§ 10 Abs. 1 SGB V"]
 
 - id: faq-zuzahlung-krankenhaus
-  frage: Was muss ich im Krankenhaus pro Tag zuzahlen?
-  varianten:
+  question: Was muss ich im Krankenhaus pro Tag zuzahlen?
+  variants:
     - Krankenhaus Zuzahlung pro Tag
     - Wie viel kostet mich ein Klinikaufenthalt?
     - Muss ich fuer stationaere Behandlung etwas bezahlen?
     - Wie lange muss ich im Krankenhaus zuzahlen?
-  antwort: >
+  answer: >
     Versicherte ab 18 Jahren zahlen bei vollstationaerer Krankenhausbehandlung
     10 Euro je Kalendertag, begrenzt auf laengstens 28 Tage im Kalenderjahr.
     Der Betrag wird direkt an das Krankenhaus gezahlt. Bereits geleistete
     Zuzahlungen zu Reha-Massnahmen im selben Jahr werden angerechnet.
     Unter 18-Jaehrige zahlen nichts.
-  zitate: ["§ 39 Abs. 4 SGB V", "§ 61 Satz 2 SGB V"]
+  citations: ["§ 39 Abs. 4 SGB V", "§ 61 Satz 2 SGB V"]
 
 - id: faq-zuzahlung-medikamente
-  frage: Wie hoch ist die Zuzahlung fuer Medikamente?
-  varianten:
+  question: Wie hoch ist die Zuzahlung fuer Medikamente?
+  variants:
     - Was kostet mich ein Rezept in der Apotheke?
     - Zuzahlung Arzneimittel Hoehe
     - Muss ich fuer Medikamente etwas dazuzahlen?
-  antwort: >
+  answer: >
     Die Zuzahlung betraegt 10 Prozent des Abgabepreises, mindestens 5 Euro und
     hoechstens 10 Euro - nie jedoch mehr als das Mittel selbst kostet. Fuer
     stationaere Massnahmen gilt stattdessen ein Festbetrag von 10 Euro je
     Kalendertag.
-  zitate: ["§ 61 SGB V"]
+  citations: ["§ 61 SGB V"]
 
 - id: faq-belastungsgrenze
-  frage: Gibt es eine Obergrenze fuer meine Zuzahlungen?
-  varianten:
+  question: Gibt es eine Obergrenze fuer meine Zuzahlungen?
+  variants:
     - Belastungsgrenze Zuzahlungen
     - Wann muss ich nichts mehr zuzahlen?
     - Befreiung von Zuzahlungen beantragen
     - Chronisch krank Zuzahlung Grenze
-  antwort: >
+  answer: >
     Ja. Pro Kalenderjahr sind Zuzahlungen nur bis zur Belastungsgrenze zu
     leisten: 2 Prozent der jaehrlichen Bruttoeinnahmen zum Lebensunterhalt.
     Fuer chronisch Kranke, die wegen derselben schwerwiegenden Krankheit in
     Dauerbehandlung sind, sinkt die Grenze auf 1 Prozent. Ist sie erreicht,
     stellt die Krankenkasse eine Bescheinigung aus, und fuer den Rest des
     Jahres entfallen weitere Zuzahlungen.
-  zitate: ["§ 62 Abs. 1 SGB V"]
+  citations: ["§ 62 Abs. 1 SGB V"]
 
 - id: faq-krankengeld-dauer
-  frage: Wie lange bekomme ich Krankengeld?
-  varianten:
+  question: Wie lange bekomme ich Krankengeld?
+  variants:
     - Krankengeld Dauer bei derselben Krankheit
     - Wie lange zahlt die Kasse bei langer Krankheit?
     - Aussteuerung Krankengeld nach wie vielen Wochen?
-  antwort: >
+  answer: >
     Grundsaetzlich ohne zeitliche Begrenzung. Wegen derselben Krankheit gibt es
     Krankengeld jedoch hoechstens 78 Wochen innerhalb von je drei Jahren,
     gerechnet ab Beginn der Arbeitsunfaehigkeit. Kommt waehrend der
     Arbeitsunfaehigkeit eine weitere Krankheit hinzu, verlaengert das die
     Leistungsdauer nicht.
-  zitate: ["§ 48 Abs. 1 SGB V"]
+  citations: ["§ 48 Abs. 1 SGB V"]
 
 - id: faq-krankengeld-anspruch
-  frage: Wann habe ich ueberhaupt Anspruch auf Krankengeld?
-  varianten:
+  question: Wann habe ich ueberhaupt Anspruch auf Krankengeld?
+  variants:
     - Voraussetzungen Krankengeld
     - Wer bekommt Krankengeld von der Kasse?
-  antwort: >
+  answer: >
     Anspruch besteht, wenn die Krankheit arbeitsunfaehig macht oder wenn
     Versicherte auf Kosten der Krankenkasse stationaer in einem Krankenhaus,
     einer Vorsorge- oder Rehabilitationseinrichtung behandelt werden.
-  zitate: ["§ 44 Abs. 1 SGB V"]
+  citations: ["§ 44 Abs. 1 SGB V"]
 
 - id: faq-kinderkrankengeld
-  frage: Wie viele Tage bekomme ich frei, wenn mein Kind krank ist?
-  varianten:
+  question: Wie viele Tage bekomme ich frei, wenn mein Kind krank ist?
+  variants:
     - Kinderkrankengeld Anzahl Tage
     - Kind krank wie lange bezahlt die Kasse?
     - Kinderkrankentage Alleinerziehende
-  antwort: >
+  answer: >
     Pro Kalenderjahr und Kind laengstens 10 Arbeitstage, fuer Alleinerziehende
     20 Arbeitstage. Bei mehreren Kindern ist der Anspruch auf insgesamt 25
     Arbeitstage begrenzt, fuer Alleinerziehende auf 50. Das Kinderkrankengeld
     betraegt 90 Prozent des ausgefallenen Nettoarbeitsentgelts.
-  zitate: ["§ 45 Abs. 2 SGB V"]
+  citations: ["§ 45 Abs. 2 SGB V"]
 
 - id: faq-sehhilfen
-  frage: Bekomme ich eine Brille von der Kasse bezahlt?
-  varianten:
+  question: Bekomme ich eine Brille von der Kasse bezahlt?
+  variants:
     - Zahlt die Krankenkasse Sehhilfen?
     - Brille auf Kassenrezept
     - Uebernimmt die Kasse Kontaktlinsen?
-  antwort: >
+  answer: >
     Bis zur Vollendung des 18. Lebensjahres besteht Anspruch auf Versorgung mit
     Sehhilfen. Ab 18 nur noch eingeschraenkt: bei schwerer Sehbeeintraechtigung
     mindestens der Stufe 1 nach ICD 10-GM 2017 trotz bestmoeglicher Korrektur,
     oder bei einem verordneten Fern-Korrekturausgleich von mehr als 6 Dioptrien
     bei Myopie oder Hyperopie beziehungsweise mehr als 4 Dioptrien bei
     Astigmatismus.
-  zitate: ["§ 33 Abs. 2 SGB V"]
+  citations: ["§ 33 Abs. 2 SGB V"]
 
 - id: faq-psychotherapie
-  frage: Zahlt die Kasse eine Psychotherapie?
-  varianten:
+  question: Zahlt die Kasse eine Psychotherapie?
+  variants:
     - Uebernimmt die Krankenkasse Psychotherapie?
     - Ist Psychotherapie eine Kassenleistung?
     - Therapieplatz Kostenuebernahme
-  antwort: >
+  answer: >
     Ja. Psychotherapie ist als aerztliche und psychotherapeutische Behandlung
     ausdruecklicher Bestandteil der Krankenbehandlung, auf die Versicherte
     Anspruch haben, wenn sie notwendig ist, um eine Krankheit zu erkennen, zu
     heilen, ihre Verschlimmerung zu verhueten oder Beschwerden zu lindern.
-  zitate: ["§ 27 Abs. 1 SGB V"]
+  citations: ["§ 27 Abs. 1 SGB V"]
 
 - id: faq-leistungsumfang
-  frage: Welche Leistungen umfasst die Krankenbehandlung?
-  varianten:
+  question: Welche Leistungen umfasst die Krankenbehandlung?
+  variants:
     - Was zahlt die gesetzliche Krankenkasse alles?
     - Leistungsumfang GKV Ueberblick
-  antwort: >
+  answer: >
     Die Krankenbehandlung umfasst aerztliche Behandlung einschliesslich
     Psychotherapie, zahnaerztliche Behandlung, Zahnersatz, Versorgung mit
     Arznei-, Verband-, Heil- und Hilfsmitteln sowie digitalen
     Gesundheitsanwendungen, haeusliche Krankenpflege, ausserklinische
     Intensivpflege und Haushaltshilfe, Krankenhausbehandlung sowie Leistungen
     zur medizinischen Rehabilitation.
-  zitate: ["§ 27 Abs. 1 SGB V"]
+  citations: ["§ 27 Abs. 1 SGB V"]
 
 - id: faq-antragsfrist
-  frage: Wie lange darf die Kasse fuer die Entscheidung ueber meinen Antrag brauchen?
-  varianten:
+  question: Wie lange darf die Kasse fuer die Entscheidung ueber meinen Antrag brauchen?
+  variants:
     - Krankenkasse antwortet nicht auf meinen Antrag
     - Frist Genehmigung Leistungsantrag
     - Genehmigungsfiktion Krankenkasse
-  antwort: >
+  answer: >
     Die Krankenkasse muss zuegig entscheiden, spaetestens innerhalb von drei
     Wochen nach Antragseingang. Wird eine gutachtliche Stellungnahme
     eingeholt - insbesondere des Medizinischen Dienstes - verlaengert sich die
     Frist auf fuenf Wochen. Der Medizinische Dienst nimmt dabei innerhalb von
     drei Wochen Stellung.
-  zitate: ["§ 13 Abs. 3a SGB V"]
+  citations: ["§ 13 Abs. 3a SGB V"]
 
 - id: faq-kassenwechsel
-  frage: Wann kann ich die Krankenkasse wechseln?
-  varianten:
+  question: Wann kann ich die Krankenkasse wechseln?
+  variants:
     - Kuendigungsfrist Krankenkasse
     - Wie lange bin ich an meine Kasse gebunden?
     - Krankenkasse wechseln Voraussetzungen
-  antwort: >
+  answer: >
     Versicherte sind mindestens zwoelf Monate an die gewaehlte Krankenkasse
     gebunden. Danach ist eine Kuendigung zum Ablauf des uebernaechsten
     Kalendermonats moeglich, gerechnet ab dem Monat der Kuendigungserklaerung.
     Beim Wechsel ersetzt die Meldung der neuen Krankenkasse die Kuendigung.
-  zitate: ["§ 175 Abs. 4 SGB V"]
+  citations: ["§ 175 Abs. 4 SGB V"]
 
 - id: faq-fahrkosten
-  frage: Werden meine Fahrtkosten zum Arzt uebernommen?
-  varianten:
+  question: Werden meine Fahrtkosten zum Arzt uebernommen?
+  variants:
     - Krankenfahrt Kostenuebernahme
     - Zahlt die Kasse das Taxi zur Behandlung?
     - Fahrkosten Dialyse erstattet
-  antwort: >
+  answer: >
     Die Krankenkasse uebernimmt Fahrkosten, wenn sie im Zusammenhang mit einer
     Leistung der Krankenkasse aus zwingenden medizinischen Gruenden notwendig
     sind. Welches Fahrzeug genutzt werden kann, richtet sich nach der
     medizinischen Notwendigkeit im Einzelfall. Bei ambulanter Behandlung nur in
     besonderen Ausnahmefaellen, die der Gemeinsame Bundesausschuss festlegt,
     und abzueglich der Zuzahlung.
-  zitate: ["§ 60 Abs. 1 SGB V"]
+  citations: ["§ 60 Abs. 1 SGB V"]
 
 - id: faq-gesundheitsuntersuchung
-  frage: Habe ich Anspruch auf einen Gesundheits-Check-up?
-  varianten:
+  question: Habe ich Anspruch auf einen Gesundheits-Check-up?
+  variants:
     - Vorsorgeuntersuchung Erwachsene Kasse
     - Check-up beim Hausarzt bezahlt
     - Impfstatus pruefen lassen
-  antwort: >
+  answer: >
     Versicherte ab 18 Jahren haben Anspruch auf alters-, geschlechter- und
     zielgruppengerechte aerztliche Gesundheitsuntersuchungen zur Erfassung
     gesundheitlicher Risiken und zur Frueherkennung bedeutsamer Krankheiten,
     samt praeventionsorientierter Beratung und einer Ueberpruefung des
     Impfstatus anhand der STIKO-Empfehlungen.
-  zitate: ["§ 25 Abs. 1 SGB V"]
+  citations: ["§ 25 Abs. 1 SGB V"]
 
 - id: faq-mutterschaftsgeld
-  frage: Bekomme ich waehrend des Mutterschutzes Geld von der Kasse?
-  varianten:
+  question: Bekomme ich waehrend des Mutterschutzes Geld von der Kasse?
+  variants:
     - Mutterschaftsgeld Anspruch
     - Wer bekommt Mutterschaftsgeld?
     - Leistungen bei Schwangerschaft Krankenkasse
-  antwort: >
+  answer: >
     Mitglieder, die bei Arbeitsunfaehigkeit Anspruch auf Krankengeld haben oder
     denen wegen der Schutzfristen nach dem Mutterschutzgesetz kein Arbeitsentgelt
     gezahlt wird, erhalten Mutterschaftsgeld. Das gilt auch, wenn das
     Arbeitsverhaeltnis unmittelbar vor Beginn der Schutzfrist endet und am
     letzten Tag eine Mitgliedschaft bestand.
-  zitate: ["§ 24i Abs. 1 SGB V"]
+  citations: ["§ 24i Abs. 1 SGB V"]
 
 - id: faq-neue-behandlungsmethoden
-  frage: Zahlt die Kasse auch neue Behandlungsmethoden?
-  varianten:
+  question: Zahlt die Kasse auch neue Behandlungsmethoden?
+  variants:
     - Neue Untersuchungsmethode Kostenuebernahme
     - Experimentelle Behandlung Krankenkasse
     - Lebensbedrohliche Erkrankung nicht anerkannte Methode
-  antwort: >
+  answer: >
     Grundsaetzlich stellen die Krankenkassen Leistungen unter Beachtung des
     Wirtschaftlichkeitsgebots zur Verfuegung. Bei einer lebensbedrohlichen oder
     regelmaessig toedlichen Erkrankung - oder einer wertungsmaessig
     vergleichbaren Erkrankung - koennen Versicherte auch eine nicht allgemein
     anerkannte Leistung beanspruchen, wenn keine dem medizinischen Standard
     entsprechende Leistung zur Verfuegung steht.
-  zitate: ["§ 2 Abs. 1 SGB V", "§ 2 Abs. 1a SGB V"]
+  citations: ["§ 2 Abs. 1 SGB V", "§ 2 Abs. 1a SGB V"]
 
 - id: faq-aufgabe-gkv
-  frage: Wofuer ist die gesetzliche Krankenversicherung ueberhaupt da?
-  varianten:
+  question: Wofuer ist die gesetzliche Krankenversicherung ueberhaupt da?
+  variants:
     - Aufgabe der Krankenkassen
     - Solidarprinzip Krankenversicherung
-  antwort: >
+  answer: >
     Die Krankenversicherung hat als Solidargemeinschaft die Aufgabe, die
     Gesundheit der Versicherten zu erhalten, wiederherzustellen oder ihren
     Gesundheitszustand zu bessern. Dazu gehoert auch die Foerderung der
     gesundheitlichen Eigenkompetenz und Eigenverantwortung.
-  zitate: ["§ 1 SGB V"]
+  citations: ["§ 1 SGB V"]

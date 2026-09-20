@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Misst die Retrieval-Qualitaet gegen das Golden Set.
+"""Measure retrieval quality against the golden set.
 
-Nur Retrieval, kein LLM: beantwortet die Frage, ob der richtige Paragraph
-ueberhaupt in den Kontext gelangt. Laeuft in Sekunden und ist damit die
-schnelle Rueckkopplung beim Tunen von Chunking, Modell und k.
+Retrieval only, no LLM: answers the question of whether the correct
+provision even makes it into the context. Runs in seconds, which makes it
+the fast feedback loop when tuning chunking, model and k.
 
     uv run scripts/eval_retrieval.py
-    uv run scripts/eval_retrieval.py --ohne-faq   # Baseline ohne FAQ-Ebene
+    uv run scripts/eval_retrieval.py --no-faq   # baseline without FAQ layer
 """
 
 from __future__ import annotations
@@ -22,16 +22,16 @@ from health_faq_agent.config import PROJECT_ROOT, Settings
 GOLDEN = PROJECT_ROOT / "data" / "eval" / "golden_set.yaml"
 
 
-def recall_at(treffer_rang: int | None, k: int) -> bool:
-    return treffer_rang is not None and treffer_rang <= k
+def recall_at(hit_rank: int | None, k: int) -> bool:
+    return hit_rank is not None and hit_rank <= k
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--golden", type=Path, default=GOLDEN)
-    parser.add_argument("--k", type=int, default=10, help="wie viele Treffer geholt werden")
-    parser.add_argument("--ohne-faq", action="store_true", help="FAQ-Ebene ausblenden (Baseline)")
-    parser.add_argument("--details", action="store_true", help="jede Frage einzeln ausgeben")
+    parser.add_argument("--k", type=int, default=10, help="how many results to fetch")
+    parser.add_argument("--no-faq", action="store_true", help="hide the FAQ layer (baseline)")
+    parser.add_argument("--details", action="store_true", help="print every question")
     args = parser.parse_args(argv)
 
     import chromadb
@@ -45,42 +45,44 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
 
-    fragen = [e for e in yaml.safe_load(args.golden.read_text(encoding="utf-8")) if e["typ"] == "beantwortbar"]
-    where = {"typ": {"$ne": "faq"}} if args.ohne_faq else None
+    questions = [
+        e for e in yaml.safe_load(args.golden.read_text(encoding="utf-8")) if e["type"] == "answerable"
+    ]
+    where = {"type": {"$ne": "faq"}} if args.no_faq else None
 
-    raenge: list[int | None] = []
-    for eintrag in fragen:
-        res = collection.query(query_texts=[eintrag["frage"]], n_results=args.k, where=where)
-        erwartet = set(eintrag["erwartete_paragraphen"])
+    ranks: list[int | None] = []
+    for entry in questions:
+        res = collection.query(query_texts=[entry["question"]], n_results=args.k, where=where)
+        expected = set(entry["expected_paragraphs"])
 
-        rang = None
+        rank = None
         for i, meta in enumerate(res["metadatas"][0], 1):
-            # FAQ-Chunks koennen mehrere Paragraphen nennen
-            genannt = set(str(meta.get("paragraph_nr", "")).split(","))
-            if genannt & erwartet:
-                rang = i
+            # FAQ chunks may cite several paragraphs
+            cited = set(str(meta.get("paragraph_nr", "")).split(","))
+            if cited & expected:
+                rank = i
                 break
-        raenge.append(rang)
+        ranks.append(rank)
 
         if args.details:
-            status = f"Rang {rang}" if rang else "nicht gefunden"
-            print(f"  [{status:>14}] {eintrag['id']}  {eintrag['frage'][:62]}")
+            status = f"rank {rank}" if rank else "not found"
+            print(f"  [{status:>12}] {entry['id']}  {entry['question'][:62]}")
 
-    n = len(fragen)
-    label = "ohne FAQ-Ebene (Baseline)" if args.ohne_faq else "mit FAQ-Ebene"
-    print(f"\n{label} - {n} beantwortbare Fragen, k={args.k}")
+    n = len(questions)
+    label = "without FAQ layer (baseline)" if args.no_faq else "with FAQ layer"
+    print(f"\n{label} - {n} answerable questions, k={args.k}")
     for k in (1, 3, 5, 10):
         if k > args.k:
             continue
-        treffer = sum(recall_at(r, k) for r in raenge)
-        print(f"  Recall@{k:<3} {treffer:>2}/{n}  ({treffer / n:.0%})")
+        hits = sum(recall_at(r, k) for r in ranks)
+        print(f"  Recall@{k:<3} {hits:>2}/{n}  ({hits / n:.0%})")
 
-    gefunden = [r for r in raenge if r]
-    if gefunden:
-        print(f"  mittlerer Rang der Treffer: {sum(gefunden) / len(gefunden):.1f}")
-    verfehlt = [f["id"] for f, r in zip(fragen, raenge) if r is None]
-    if verfehlt:
-        print(f"  ausserhalb k={args.k}: {', '.join(verfehlt)}")
+    found = [r for r in ranks if r]
+    if found:
+        print(f"  mean rank of hits: {sum(found) / len(found):.1f}")
+    missed = [q["id"] for q, r in zip(questions, ranks) if r is None]
+    if missed:
+        print(f"  outside k={args.k}: {', '.join(missed)}")
     return 0
 
 
