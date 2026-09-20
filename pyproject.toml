@@ -1,0 +1,23 @@
+[project]
+name = "health-faq-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Sabrina Hartung", email = "sabrina.hartung@haw-hamburg.de" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "fastapi>=0.141.1",
+    "langchain>=1.4.2",
+    "ollama>=0.6.2",
+    "uvicorn>=0.53.0",
+]
+
+[project.scripts]
+health-faq-agent = "health_faq_agent:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
