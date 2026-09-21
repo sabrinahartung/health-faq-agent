@@ -1,7 +1,7 @@
 [project]
 name = "health-faq-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "A locally running RAG agent for entitlements under German statutory health insurance, with source citations"
 readme = "README.md"
 authors = [
     { name = "Sabrina Hartung", email = "sabrina.hartung@haw-hamburg.de" }
