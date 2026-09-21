@@ -110,49 +110,180 @@ uv run scripts/eval_retrieval.py          # prints the recall table
 ## M2 — Agent as a service
 
 **Why it exists.** So far the project is a set of scripts. This milestone
-turns it into something that can be called over HTTP, gives structured
-answers with citations, and decides for itself which tool to use. It is also
-where the refusal boundary becomes real code rather than an intention: the
-agent must answer entitlement questions and decline individual medical
-advice.
+turns it into something that can be called over HTTP, answers with citations,
+and decides for itself which tool to use. It is also where the refusal
+boundary stops being an intention and becomes code.
 
-!!! warning "Unfinished draft outside `main`"
-    A first version of `api.py`, `retrieval.py`, `schemas.py`, `prompts.py`,
-    `llm.py`, `pipeline.py` and `logging_config.py` exists in two PyCharm
-    shelves (`.idea/shelf/`). None of it is committed. The first task of
-    this milestone is to decide what of it survives and bring that part into
-    `main` — a shelf is not a branch and is not backed up.
+!!! note "This milestone is deliberately slow"
+    An earlier, generated draft of this layer was discarded on purpose. The
+    goal of this project is not a working service but the ability to explain
+    how one works, so M2 is structured as **seven stages, each with a
+    comprehension checkpoint before the implementation step**. If a
+    checkpoint cannot be answered out loud without notes, the stage is not
+    finished, regardless of whether the code runs.
 
-**Done when**
+    Rule for this milestone: **no dependency is added before the thing it
+    wraps has been written once by hand.** LangChain may come in at M2.7, and
+    only if it removes work that is genuinely understood.
 
-- [ ] Shelved draft reviewed: kept, rewritten or discarded, and the decision recorded in the [Logbook](logbook.md)
-- [ ] `GET /health` returns service status and confirms Ollama and Chroma are reachable
-- [ ] `POST /ask` accepts a German question and returns an answer
-- [ ] Response schema defined with Pydantic: answer text, list of citations (provision number, heading, source URL), and a refusal flag
-- [ ] Retrieval tool implemented with `k` between 8 and 10 — [Evaluation](evaluation.md) shows `k=3` cuts off correct provisions
-- [ ] A second tool implemented (glossary lookup for terms of art such as *Belastungsgrenze*), so the agent genuinely has to choose
-- [ ] Agent loop wired up: the model selects tools, receives results, and produces a final answer
-- [ ] System prompt encodes the refusal boundary and forbids answering without a retrieved source
-- [ ] Structured JSON logging throughout — no `print`, no unstructured strings
-- [ ] Every answer carries at least one citation, or is an explicit refusal; never neither
-- [ ] `tests/` covers the schema, the refusal path and one end-to-end `/ask` call
-- [ ] Architecture page updated to match what was actually built
+### M2.1 — Tool calling, without a framework
 
-**How to check**
+*Concept.* What actually crosses the wire when a model "uses a tool". A
+`tools` array of JSON schemas goes out with the messages; if the model wants
+one it returns a `tool_calls` field **instead of** `content`; your code looks
+up the function, executes it, appends the result as a `role: "tool"` message,
+and sends the whole conversation back. The loop ends when the model returns
+content instead of a call. There is no magic in it — it is a `while` loop
+with a dictionary lookup.
+
+*Do.* Write a throwaway script with one silly tool (`get_current_date`) and
+print the **raw**, unparsed response object at every step.
+
+*Checkpoint — be able to explain:*
+
+- [ ] What the model returns when it wants a tool, and what it does **not** return
+- [ ] Who executes the function — the model, Ollama, or your code
+- [ ] What ends the loop, and what happens if nothing ever does
+- [ ] Why the tool result has to go back as a message rather than as a new question
+
+*Read.* Ollama's tool-support blog post and `docs/api.md` in the Ollama
+repository — the API reference, not a tutorial.
+
+### M2.2 — RAG or agent: choosing the control flow
+
+*Concept.* These are two different designs and the difference is **who
+decides**. A RAG pipeline is: embed → search → paste top-k into a prompt →
+generate. Your code decides everything, one LLM call, fully traceable. An
+agent hands that decision to the model. An agent is better when a question
+needs more than one lookup or a choice between sources — and worse otherwise,
+because it adds failure modes without adding capability.
+
+*Do.* Build the **plain RAG path first**, as a baseline you can measure
+against. Only then add the loop.
+
+*Checkpoint — be able to explain:*
+
+- [ ] A question from the golden set that genuinely needs two lookups — or the honest admission that none does
+- [ ] What an agent buys this project that a RAG pipeline does not
+- [ ] Which new failure modes the loop introduces
+- [ ] Why a glossary tool makes the choice real rather than decorative
+
+- [ ] Written up as **Decision 005 — agent loop or RAG pipeline**
+
+### M2.3 — Retrieval as a tool
+
+*Concept.* The retrieval you already have becomes a function the model can
+call, which means it needs a schema, a docstring the model will actually
+read, and a decision about `k`. [Evaluation](evaluation.md) already answers
+the last one: cosine distances across the statutory text sit between 0.386
+and 0.494, so discrimination is weak and `k=3` cuts off correct provisions
+that sit at rank 4. Use 8 to 10.
+
+*Checkpoint — be able to explain:*
+
+- [ ] Why the tool description is a prompt, not a comment
+- [ ] Why `k=8` here and `k=3` in a tutorial
+- [ ] What the model sees of a chunk — text only, or metadata too, and why that matters for citations
+
+- [ ] Retrieval tool implemented with `k` between 8 and 10
+- [ ] Glossary tool implemented for terms of art such as *Belastungsgrenze*
+
+### M2.4 — Structured output and honest citations
+
+*Concept.* Ollama takes a JSON schema in its `format` parameter, and a
+Pydantic model can produce that schema directly. The formatting is the easy
+half. The hard half is that a 3B model can return a perfectly valid object
+citing a provision that was never in its context — schema validation will not
+catch it, because the shape is right and only the content is invented.
+
+*Do.* Define the response schema — answer text, citations (provision number,
+heading, source URL), refusal flag. Then deliberately try to make it cite
+something absent, and see how often it does.
+
+*Checkpoint — be able to explain:*
+
+- [ ] The difference between a schema violation and a groundedness violation
+- [ ] How you would detect a citation that was not in the retrieved context
+- [ ] Why that check belongs in code and not in the prompt
+
+- [ ] Pydantic response schema defined
+- [ ] Citations validated against the retrieved chunk ids, not merely parsed
+
+### M2.5 — The refusal boundary as system design
+
+*Concept.* `llama3.2:3b` will not reliably refuse medical questions because a
+system prompt asked it to; small models are agreeable, and agreeableness is
+the failure mode here. This is a design decision with at least three
+credible answers, each with a different cost:
+
+| Approach | Cost |
+|---|---|
+| Classify the question before retrieval, short-circuit | an extra call; a classifier that can be wrong in both directions |
+| Make refusal an explicit tool the model can call | still relies on the model choosing correctly |
+| Generate, then check groundedness and suppress | most robust, most work, slowest |
+
+The golden set already measures this: 8 `refuse_medical` questions, and
+`gold-30` deliberately sits on the boundary — it sounds like a coverage
+question but asks for a severity judgement.
+
+*Checkpoint — be able to explain:*
+
+- [ ] Why a system prompt alone is insufficient on a 3B model
+- [ ] Which approach you chose and what it costs you
+- [ ] The difference between refusing (`refuse_medical`) and admitting a gap (`out_of_corpus`) — two failure modes, two metrics
+- [ ] What a **false** refusal costs a user, and why that must be measured too
+
+- [ ] Written up as **Decision 006 — where the refusal boundary lives**
+- [ ] Refusal path implemented
+- [ ] Every answer carries a citation or is an explicit refusal — never neither
+
+### M2.6 — The service shell
+
+*Concept.* A health endpoint that returns `{"status": "ok"}` unconditionally
+is worse than none, because it makes an outage look like uptime. It has to
+check the things that can actually be down: Ollama reachable, the model
+present, the Chroma collection non-empty.
+
+*Checkpoint — be able to explain:*
+
+- [ ] What `/health` must check here to be worth having
+- [ ] Why the agent is not constructed per request
+- [ ] What a caller should receive when the model is down
+
+- [ ] `GET /health` checks Ollama, the model and the collection
+- [ ] `POST /ask` accepts a German question and returns the schema from M2.4
+
+### M2.7 — Logging, tests, and only then frameworks
+
+*Concept.* Structured logging is what makes the loop legible before Langfuse
+exists in M4. It is also the first place personal data can leak: a question
+is user input, and this domain's questions are about people's health.
+
+*Checkpoint — be able to explain:*
+
+- [ ] What must never reach a log line in this project, and why
+- [ ] What you would need in a log to debug a wrong answer three days later
+- [ ] Which parts, if any, LangChain would now genuinely simplify
+
+- [ ] Structured JSON logging throughout, no `print`
+- [ ] `tests/` covers the schema, the refusal path and one end-to-end `/ask`
+- [ ] [Architecture](architecture.md) updated to match what was built
+- [ ] [Logbook](logbook.md) entry including what did not work
+
+### Verifying the whole milestone
 
 ```bash
 uv run uvicorn health_faq_agent.api:app --reload
 curl localhost:8000/health
-curl -X POST localhost:8000/ask \
-  -H 'content-type: application/json' \
+curl -X POST localhost:8000/ask -H 'content-type: application/json' \
   -d '{"question": "Wann faellt mein Kind aus der Familienversicherung?"}'
 ```
 
-The answer must name a provision. Ask a medical question
-(*"Ist meine Depression schwer genug fuer eine Therapie?"*) and the service
-must refuse rather than assess.
+The answer must name a provision. Then ask *"Ist meine Depression schwer
+genug fuer eine Therapie?"* — the service must refuse rather than assess.
 
-**Depends on** M1. **Budget** 3 days.
+**Depends on** M1. **Budget** 6 days, longer than the 3 a straight
+implementation would take. The difference is the point of the milestone.
 
 ---
 
