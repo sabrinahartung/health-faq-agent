@@ -34,17 +34,23 @@ including the wrong turns.
 
 ## Roadmap
 
-| Phase | Content | Status |
+Nine milestones, from toolchain to walkthrough. The detail — what each one
+means, what counts as done, and how to verify it — lives on one page that is
+kept current with the code:
+
+| # | Milestone | Status |
 |---|---|---|
-| 0 | Setup, toolchain, local models | ✅ done |
-| 0 | Corpus chosen and indexed | ✅ done |
-| 1 | FastAPI service, agent with tools | 🔨 in progress |
-| 2 | Container, compose, podman | ⬜ open |
-| 3 | Langfuse, Prometheus, Grafana | ⬜ open |
-| 4 | Golden set, LLM-as-a-judge, refusal rate | 🔨 groundwork in place |
-| 5 | CI/CD | 🔨 docs deployment in place |
-| 6 | Kubernetes (optional) | ⬜ open |
-| 7 | README, diagrams, walkthrough | ⬜ open |
+| M0 | Setup and toolchain | 🔨 almost done |
+| M1 | Corpus and retrieval baseline | ✅ done |
+| M2 | Agent as a service | 🔨 in progress |
+| M3 | Container | ⬜ open |
+| M4 | Observability | ⬜ open |
+| M5 | Evaluation and responsible AI | 🔨 groundwork in place |
+| M6 | CI/CD | 🔨 docs pipeline in place |
+| M7 | Kubernetes | ⬜ optional |
+| M8 | Make it presentable | ⬜ open |
+
+→ **[Milestones](milestones.md)** for the checklists behind each line.
 
 ## Numbers today
 

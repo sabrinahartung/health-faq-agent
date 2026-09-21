@@ -40,6 +40,7 @@ theme:
 
 nav:
   - Overview: index.md
+  - Milestones: milestones.md
   - Architecture: architecture.md
   - Corpus & licensing: corpus.md
   - Evaluation: evaluation.md
@@ -74,6 +75,8 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 extra:
   social:
