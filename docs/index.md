@@ -1,86 +1,51 @@
 # Health FAQ Agent
 
-A RAG agent that answers questions about **entitlements under German
-statutory health insurance** — with a citation to the statute, running
+A retrieval-augmented agent that answers questions about **entitlements under
+German statutory health insurance** — with a citation to the statute, running
 entirely locally, without a single API key.
 
 !!! info "Scope"
     The agent answers questions about **entitlements, benefits and
-    co-payments**. It gives **no individual medical advice**. That boundary
-    is not bolted on afterwards; it follows from the choice of corpus — see
-    [Decision 001](decisions/001-corpus.md).
-
-!!! note "Why the German vocabulary"
-    The domain is German statutory health insurance. Terms such as
-    *Familienversicherung*, *Belastungsgrenze* and *Zuzahlung* are terms of
-    art with no clean English equivalent, and the corpus, the FAQ layer and
-    the evaluation set are German by necessity — they have to match German
-    user queries. Documentation and code are English; domain vocabulary is
-    not translated.
+    co-payments**. It gives **no individual medical advice**. That boundary is
+    not bolted on afterwards; it follows from the choice of corpus.
 
 ## Why this project exists
 
-A practice project for building a retrieval-augmented agent on a domain where
-correctness matters and the limits of competence are sharp: entitlements under
-German statutory health insurance.
+A domain where correctness matters and the limits of competence are sharp:
+statutory entitlements are public, precisely worded and legally quotable,
+while the neighbouring questions — *is my condition severe enough?* — must not
+be answered by a language model at all.
 
-The interesting part is not that it answers questions. It is what it takes to
-know whether it answers them *well* — a corpus you are allowed to use, a
-retrieval step you can measure, a refusal boundary you can defend, and traces
-you can inspect when it goes wrong.
+The interesting problem is not producing an answer. It is knowing whether the
+answer is any good: a corpus you are allowed to use, a retrieval step you can
+measure, a refusal boundary you can defend, and traces you can inspect when it
+goes wrong.
 
-What is documented here is therefore not only the result but the route,
-including the wrong turns.
+!!! note "Why the German vocabulary"
+    The domain is German statutory health insurance. Terms such as
+    *Familienversicherung*, *Belastungsgrenze* and *Zuzahlung* are terms of art
+    with no clean English equivalent, so the corpus, the FAQ layer and the
+    evaluation set are German by necessity. Documentation and code are English.
 
-## Roadmap
+## Where it stands
 
-Nine milestones, from toolchain to walkthrough. The detail — what each one
-means, what counts as done, and how to verify it — lives on one page that is
-kept current with the code:
+| | |
+|---|---|
+| **3,002** | chunks of SGB V statutory text, cut along subsections |
+| **18** | hand-written FAQ entries bridging everyday to legal language |
+| **95 %** | Recall@1 on a 33-question evaluation set, against 68 % without the FAQ layer |
+| **€0** | running cost — Ollama, Chroma, Langfuse and Grafana all run locally |
 
-| # | Milestone | Status |
-|---|---|---|
-| M0 | Setup and toolchain | 🔨 almost done |
-| M1 | Corpus and retrieval baseline | ✅ done |
-| M2 | Agent as a service | 🔨 in progress |
-| M3 | Container | ⬜ open |
-| M4 | Observability | ⬜ open |
-| M5 | Evaluation and responsible AI | 🔨 groundwork in place |
-| M6 | CI/CD | 🔨 docs pipeline in place |
-| M7 | Kubernetes | ⬜ optional |
-| M8 | Make it presentable | ⬜ open |
+Current state: corpus and retrieval are built and measured; the agent service
+is in progress. See the [milestone plan](milestones.md) for what is done and
+what is not.
 
-→ **[Milestones](milestones.md)** for the checklists behind each line.
+## How it works
 
-## Numbers today
-
-<div class="grid cards" markdown>
-
--   **3,002**{ .lg } chunks
-
-    ---
-
-    SGB V statutory text, cut along subsections
-
--   **18**{ .lg } FAQ entries
-
-    ---
-
-    72 everyday phrasings bridging to legal language
-
--   **95 %**{ .lg } Recall@1
-
-    ---
-
-    against 68 % without the FAQ layer → [Evaluation](evaluation.md)
-
--   **€0**{ .lg } running cost
-
-    ---
-
-    Ollama, Chroma, Langfuse and Grafana all run locally
-
-</div>
+Questions are embedded with `bge-m3`, matched against a Chroma index of SGB V
+and a hand-written FAQ layer, and answered by `llama3.2:3b` running locally
+through Ollama. Every answer carries the provision it rests on, or is an
+explicit refusal. See [Architecture](architecture.md).
 
 ## Quick start
 
@@ -96,14 +61,13 @@ uv sync
 uv run scripts/ingest_sgb5.py --rebuild
 uv run scripts/ingest_faq.py
 
-# check retrieval
+# check retrieval quality
 uv run scripts/eval_retrieval.py
 ```
 
-More under [Development](development.md).
-
 ## Disclaimer
 
-The statutes used are **non-official** consolidated versions. Only the
-*Bundesgesetzblatt* is authoritative. The agent therefore cites its source in
-every answer rather than implying authority.
+The statutes used are **non-official** consolidated versions from
+`gesetze-im-internet.de`. Only the *Bundesgesetzblatt* is authoritative. The
+agent therefore cites its source in every answer rather than implying
+authority. Licensing and provenance are recorded in `SOURCES.md`.

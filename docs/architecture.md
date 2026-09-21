@@ -8,7 +8,7 @@ flowchart LR
     API --> AG[Agent]
     AG -->|tool 1| RET[Retrieval]
     AG -->|tool 2| GLO[Glossary lookup]
-    RET --> CH[(ChromaDB<br/>3020 documents)]
+    RET --> CH[(ChromaDB<br/>3,002 chunks)]
     CH -->|context + citations| AG
     AG -->|prompt| LLM[Ollama<br/>llama3.2:3b]
     LLM --> AG
@@ -29,7 +29,7 @@ flowchart LR
     style GR stroke-dasharray: 5 5
 ```
 
-Dashed: phase 3, not built yet.
+Dashed components belong to [M4 — Observability](milestones.md#m4-observability) and are not built yet.
 
 ## Ingest path
 
@@ -60,10 +60,11 @@ flowchart TD
 
 | Component | Choice | Reason |
 |---|---|---|
-| Embedding | `bge-m3` | multilingual, German corpus → [002](decisions/002-embedding-model.md) |
+| Embedding | `bge-m3` | multilingual; the corpus is German and `nomic-embed-text` is trained on English |
 | Generation | `llama3.2:3b` | runs natively on the Mac with GPU, 2 GB |
 | Vector store | ChromaDB | embedded, no separate service needed |
 | Distance | cosine | standard for sentence embeddings; Chroma defaults to L2 |
+| Retrieval depth | k = 8–10 | cosine distances across statutory text cluster tightly, so k = 3 cuts off correct provisions |
 | Package manager | uv | fast, locks versions, manages the Python version |
 
 ## Configuration

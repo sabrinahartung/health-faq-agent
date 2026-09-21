@@ -40,18 +40,8 @@ theme:
 
 nav:
   - Overview: index.md
-  - Milestones: milestones.md
+  - Milestone plan: milestones.md
   - Architecture: architecture.md
-  - Corpus & licensing: corpus.md
-  - Evaluation: evaluation.md
-  - Decisions:
-      - decisions/index.md
-      - 001 — SGB V as corpus: decisions/001-corpus.md
-      - 002 — Embedding model: decisions/002-embedding-model.md
-      - 003 — Chunking by subsection: decisions/003-chunking.md
-      - 004 — FAQ layer: decisions/004-faq-layer.md
-  - Logbook: logbook.md
-  - Development: development.md
 
 markdown_extensions:
   - abbr
