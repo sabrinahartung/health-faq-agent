@@ -136,8 +136,37 @@ and sends the whole conversation back. The loop ends when the model returns
 content instead of a call. There is no magic in it — it is a `while` loop
 with a dictionary lookup.
 
-*Do.* Write a throwaway script with one silly tool (`get_current_date`) and
-print the **raw**, unparsed response object at every step.
+*Do.* Write `spikes/01_tool_calling.py` — throwaway code, committed to `dev`
+as a record. Three steps, in order.
+
+**Step 1 — one call, no loop.** One tool, `get_current_date`, with its JSON
+schema written out by hand. Ask *"What is today's date?"*, `stream=False`, and
+print the **entire** response object, not just the message. Note which fields
+are populated, which are absent, and what `done_reason` says.
+
+**Step 2 — close the loop.** Execute the function yourself, append the result,
+call again. Print the full message list immediately before the second call —
+that list is the whole protocol, visible in one place.
+
+**Step 3 — break it on purpose.** This is where the learning is:
+
+| Experiment | What it reveals |
+|---|---|
+| Ask something the tool cannot answer (*"capital of France?"*) | whether the model calls a tool because it is useful or because it is there |
+| Skip step 2 — never send the result back | what the model does with an unanswered call |
+| Give the tool a vague description (*"does a thing"*) | whether the description is a prompt or a comment |
+| Add a second tool and ask something needing both | whether calls arrive in parallel, and how results are matched to calls |
+
+The last row matters most: it decides how the retrieval and glossary tools of
+M2.3 have to be wired.
+
+!!! warning "Traps that cost time without teaching anything"
+    Set `stream=False` explicitly — streamed tool calls arrive differently.
+    Write the JSON schema by hand rather than letting the Python client derive
+    it from a function signature; deriving it is the convenience you are trying
+    to see through. And run each experiment several times: `llama3.2:3b` is
+    small and will not behave identically twice. The variance is data, not
+    noise.
 
 *Checkpoint — be able to explain:*
 
